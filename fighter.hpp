@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <string_view>
+#include "spell.hpp"
 
 namespace combat
 {
@@ -19,8 +19,12 @@ private:
     std::int32_t m_maxMana;
     std::int32_t m_actionPoints;
 
+    // Композиция: заклинание принадлежит бойцу и живёт ровно столько же
+    Spell m_spell;
+
 public:
-    Fighter(std::int32_t id, std::int32_t health, std::int32_t mana, std::int32_t actionPoints);
+    Fighter(std::int32_t id, std::int32_t health, std::int32_t mana, std::int32_t actionPoints,
+            std::string_view spellName, std::int32_t spellCost);
 
     Fighter() = delete;
     Fighter(const Fighter&) = delete;
@@ -34,12 +38,13 @@ public:
     [[nodiscard]] std::int32_t GetHealth() const;
     [[nodiscard]] std::int32_t GetMana() const;
     [[nodiscard]] std::int32_t GetActionPoints() const;
+    [[nodiscard]] const Spell& GetSpell() const;
 
     // Содержательный метод 1: получение урона с проверкой (здоровье >= 0)
     void TakeDamage(std::int32_t amount);
 
-    // Содержательный метод 2: применение заклинания с проверкой (хватает ли маны)
-    bool CastSpell(std::int32_t manaCost);
+    // Содержательный метод 2: применение своего заклинания с проверкой (хватает ли маны)
+    [[nodiscard]] bool CastSpell();
 };
 
 } // namespace combat
