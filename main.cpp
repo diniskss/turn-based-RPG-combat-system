@@ -4,51 +4,29 @@
 
 int main()
 {
-    std::cout << "=== 1. Static initialization & pointer/reference demo ===\n";
-    combat::Fighter staticFighter(1, 100, 50, 1, "Fireball", 20);
-    combat::Fighter& refFighter = staticFighter;
-    combat::Fighter* ptrFighter = &staticFighter;
-
-    refFighter.TakeDamage(30);
-    ptrFighter->CastSpell();
-
-    std::cout << "\n=== 2. Dynamic initialization (new / delete) & Aggregation demo ===\n";
-    combat::Fighter* externalFighter = new combat::Fighter(2, 120, 80, 1, "Ice Lance", 50);
-
+    // unique_ptr: удаление при выходе из блока + std::move
     {
-        combat::Suite mySuite("Alpha Squad");
-        mySuite.AddFighter(externalFighter);
-        mySuite.InspectSuite();
+        auto u1 = std::make_unique<combat::Fighter>(3, 90, 30, 1, "Spark", 10);
+        auto u2 = std::move(u1);
+        std::cout << "u1 empty: " << (u1 == nullptr) << "\n";   // 1
+    } // деструктор Fighter 3 тут, без delete
 
-        externalFighter->CastSpell(); // 80 -> 30, должно пройти
-        externalFighter->CastSpell(); // 30 < 50, должно отказать
+    // массив: vector<unique_ptr>
+    std::vector<std::unique_ptr<combat::Fighter>> arr;
+    arr.push_back(std::make_unique<combat::Fighter>(4, 110, 60, 1, "Shield", 10));
 
-        std::cout << "\n--- Leaving suite scope (Suite destruction) ---\n";
-    } // Уничтожается mySuite. Боец НЕ должен уничтожиться!
-
-    std::cout << "\n=== 3. Verification that aggregated object is still alive ===\n";
-    std::cout << "External fighter HP after suite is gone: " << externalFighter->GetHealth() << "\n";
-
-    delete externalFighter;
-
-    std::cout << "\n=== 4. Dynamic array and array of dynamic objects demo ===\n";
-    combat::Fighter* fightersArray[2] = {
-        new combat::Fighter(3, 90, 30, 1, "Spark", 10),
-        new combat::Fighter(4, 110, 60, 1, "Shield", 10)
-    };
-
-    fightersArray[0]->TakeDamage(50);
-    fightersArray[1]->CastSpell();
-
-    delete fightersArray[0];
-    delete fightersArray[1];
-
-    std::cout << "\n=== 5. Composition demo (destruction order) ===\n";
+    // shared_ptr: use_count
+    auto s1 = std::make_shared<combat::Fighter>(2, 120, 80, 1, "Ice Lance", 50);
+    std::cout << s1.use_count() << "\n";        // 1
     {
-        combat::Fighter composed(5, 80, 40, 1, "Lightning", 15);
-        std::cout << "--- Leaving block (Fighter destruction) ---\n";
-    } // Сначала ~Fighter, потом автоматически ~Spell
+        auto s2 = s1;
+        std::cout << s1.use_count() << "\n";    // 2
+    }
+    std::cout << s1.use_count() << "\n";        // 1
 
-    std::cout << "=== Program finished successfully ===\n";
-    return 0;
+    // weak_ptr: lock() до и после
+    std::weak_ptr<combat::Fighter> w = s1;
+    if (auto p = w.lock()) { std::cout << "alive, id " << p->GetId() << "\n"; }
+    s1.reset();                                  // последний владелец ушёл, тут деструктор
+    if (auto p = w.lock()) { /* не зайдёт */ } else { std::cout << "expired\n"; }
 }

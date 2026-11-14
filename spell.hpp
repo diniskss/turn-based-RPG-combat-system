@@ -30,6 +30,7 @@ public:
     [[nodiscard]] std::int32_t GetManaCost() const;
 
     void Use() const;
+    
 };
 
 } // namespace combat

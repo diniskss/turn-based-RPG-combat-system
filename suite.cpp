@@ -21,25 +21,27 @@ std::string_view Suite::GetName() const
     return m_name;
 }
 
-void Suite::AddFighter(Fighter* fighter)
+void Suite::AddFighter(const std::shared_ptr<Fighter>& fighter)
 {
-    if (fighter != nullptr)
+    if (fighter)
     {
-        m_fighters.push_back(fighter);
+        m_fighters.push_back(fighter); // shared_ptr -> weak_ptr неявно
         std::cout << "[Suite] Fighter added to suite " << m_name << "\n";
     }
 }
 
 void Suite::InspectSuite() const
 {
-    std::cout << "[Suite] Inspecting suite '" << m_name << "'. Total fighters: " << m_fighters.size() << "\n";
-    for (const auto* fighter : m_fighters)
+    std::cout << "[Suite] Inspecting suite '" << m_name << "'. Fighters: " << m_fighters.size() << "\n";
+    for (const auto& weak : m_fighters)
     {
-        if (fighter != nullptr)
+        if (const auto fighter = weak.lock()) // lock() даёт shared_ptr или пустой
         {
-            std::cout << "  - Fighter ID: " << fighter->GetId() 
-                      << ", HP: " << fighter->GetHealth() 
-                      << ", Mana: " << fighter->GetMana() << "\n";
+            std::cout << " - Fighter ID: " << fighter->GetId() << ", HP: " << fighter->GetHealth() << "\n";
+        }
+        else
+        {
+            std::cout << " - (fighter no longer exists)\n";
         }
     }
 }
