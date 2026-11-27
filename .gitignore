@@ -37,6 +37,9 @@
 *.exe
 *.out
 *.app
+# C++ build output without an extension (g++ -o main / -o app on Linux and in Git Bash)
+/app
+/main
 
 # Build directories
 build/
