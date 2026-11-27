@@ -5,13 +5,16 @@ namespace combat
 {
 
 Fighter::Fighter(std::int32_t id, std::int32_t health, std::int32_t mana, std::int32_t actionPoints,
-                 std::string_view spellName, std::int32_t spellCost)
+                 std::string_view spellName, std::int32_t spellCost,
+                 std::int32_t attack, std::int32_t defense)
     : m_id(id)
     , m_health(health)
     , m_maxHealth(health)
     , m_mana(mana)
     , m_maxMana(mana)
     , m_actionPoints(actionPoints)
+    , m_attack(attack)
+    , m_defense(defense)
     , m_spell(spellName, spellCost)   // Spell создаётся здесь, ДО тела конструктора
 {
     std::cout << "[Fighter] Created fighter ID: " << m_id << "\n";
@@ -27,6 +30,8 @@ std::int32_t Fighter::GetId() const { return m_id; }
 std::int32_t Fighter::GetHealth() const { return m_health; }
 std::int32_t Fighter::GetMana() const { return m_mana; }
 std::int32_t Fighter::GetActionPoints() const { return m_actionPoints; }
+std::int32_t Fighter::GetAttack() const { return m_attack; }
+std::int32_t Fighter::GetDefense() const { return m_defense; }
 const Spell& Fighter::GetSpell() const { return m_spell; }
 
 void Fighter::TakeDamage(std::int32_t amount)
@@ -41,6 +46,80 @@ void Fighter::TakeDamage(std::int32_t amount)
     }
     std::cout << "[Fighter] ID: " << m_id << " took " << amount
               << " damage. HP: " << oldHealth << " -> " << m_health << "\n";
+}
+
+void Fighter::RestoreHealth(std::int32_t amount)
+{
+    // Правило: количество не бывает отрицательным, иначе «лечение» наносило бы урон
+    if (amount < 0)
+    {
+        std::cout << "[Fighter Error] ID: " << m_id
+                  << " cannot restore a negative amount of health (Action rejected)\n";
+        return;
+    }
+
+    const auto oldHealth = m_health;
+    m_health += amount;
+
+    // Правило: здоровье не может быть больше максимального
+    if (m_health > m_maxHealth)
+    {
+        m_health = m_maxHealth;
+    }
+    std::cout << "[Fighter] ID: " << m_id << " restored " << amount
+              << " health. HP: " << oldHealth << " -> " << m_health << "\n";
+}
+
+void Fighter::RestoreMana(std::int32_t amount)
+{
+    // Правило: количество не бывает отрицательным
+    if (amount < 0)
+    {
+        std::cout << "[Fighter Error] ID: " << m_id
+                  << " cannot restore a negative amount of mana (Action rejected)\n";
+        return;
+    }
+
+    const auto oldMana = m_mana;
+    m_mana += amount;
+
+    // Правило: мана не может быть больше максимальной
+    if (m_mana > m_maxMana)
+    {
+        m_mana = m_maxMana;
+    }
+    std::cout << "[Fighter] ID: " << m_id << " restored " << amount
+              << " mana. Mana: " << oldMana << " -> " << m_mana << "\n";
+}
+
+void Fighter::IncreaseAttack(std::int32_t bonus)
+{
+    // Правило: оружие повышает атаку, а не снижает
+    if (bonus <= 0)
+    {
+        std::cout << "[Fighter Error] ID: " << m_id
+                  << " attack bonus must be positive (Action rejected)\n";
+        return;
+    }
+
+    const auto oldAttack = m_attack;
+    m_attack += bonus;
+    std::cout << "[Fighter] ID: " << m_id << " attack: " << oldAttack << " -> " << m_attack << "\n";
+}
+
+void Fighter::IncreaseDefense(std::int32_t bonus)
+{
+    // Правило: броня повышает защиту, а не снижает
+    if (bonus <= 0)
+    {
+        std::cout << "[Fighter Error] ID: " << m_id
+                  << " defense bonus must be positive (Action rejected)\n";
+        return;
+    }
+
+    const auto oldDefense = m_defense;
+    m_defense += bonus;
+    std::cout << "[Fighter] ID: " << m_id << " defense: " << oldDefense << " -> " << m_defense << "\n";
 }
 
 bool Fighter::CastSpell()
