@@ -1,2 +1,2 @@
-g++ main.cpp fighter.cpp spell.cpp suite.cpp -std=c++17 -Wall -Wextra -o app
-./app
+javac -d out src/combat/*.java
+java -cp out combat.Main
