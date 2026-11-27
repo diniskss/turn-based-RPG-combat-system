@@ -1,0 +1,49 @@
+#include "suite.hpp"
+#include <iostream>
+
+namespace combat
+{
+
+Suite::Suite(std::string_view name)
+    : m_name(name)
+{
+    std::cout << "[Suite] Created suite: " << m_name << "\n";
+}
+
+Suite::~Suite()
+{
+    // Агрегация: при уничтожении свиты сами бойцы НЕ удаляются через delete, так как они существуют независимо от свиты.
+    std::cout << "[Suite] Destroyed suite: " << m_name << " (fighters remain intact)\n";
+}
+
+std::string_view Suite::GetName() const
+{
+    return m_name;
+}
+
+void Suite::AddFighter(const std::shared_ptr<Fighter>& fighter)
+{
+    if (fighter)
+    {
+        m_fighters.push_back(fighter); // shared_ptr -> weak_ptr неявно
+        std::cout << "[Suite] Fighter added to suite " << m_name << "\n";
+    }
+}
+
+void Suite::InspectSuite() const
+{
+    std::cout << "[Suite] Inspecting suite '" << m_name << "'. Fighters: " << m_fighters.size() << "\n";
+    for (const auto& weak : m_fighters)
+    {
+        if (const auto fighter = weak.lock()) // lock() даёт shared_ptr или пустой
+        {
+            std::cout << " - Fighter ID: " << fighter->GetId() << ", HP: " << fighter->GetHealth() << "\n";
+        }
+        else
+        {
+            std::cout << " - (fighter no longer exists)\n";
+        }
+    }
+}
+
+} // namespace combat
